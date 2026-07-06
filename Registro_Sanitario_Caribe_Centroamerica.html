@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Sanitario – Caribe y Centroamérica</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f2;
+    --bg3: #eeede8;
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #88877f;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.20);
+    --radius: 10px;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252523;
+      --bg3: #2e2e2b;
+      --text: #e8e6de;
+      --text2: #a8a69e;
+      --text3: #6e6d67;
+      --border: rgba(255,255,255,0.11);
+      --border2: rgba(255,255,255,0.20);
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg2);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 20px 48px;
+  }
+
+  /* ── Header ── */
+  header {
+    max-width: 1340px;
+    margin: 0 auto 22px;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  header p {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  /* ── Tabs ── */
+  .tabs-wrap {
+    max-width: 1340px;
+    margin: 0 auto 0;
+  }
+  .tabs-bar {
+    display: flex;
+    gap: 4px;
+    padding: 0 0 0 2px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 9px 9px 0 0;
+    border: 0.5px solid var(--border2);
+    border-bottom: none;
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .13s, color .13s;
+    user-select: none;
+  }
+  .tab-btn:hover { background: var(--bg); color: var(--text); }
+  .tab-btn.active {
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 600;
+    border-color: var(--border2);
+  }
+  .tab-flag { font-size: 17px; line-height: 1; }
+
+  /* ── Main card ── */
+  .main-card {
+    max-width: 1340px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 0 12px 12px 12px;
+    border: 0.5px solid var(--border2);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .country-panel { display: none; }
+  .country-panel.active { display: block; }
+
+  /* ── Flow ── */
+  .flow-wrap {
+    overflow-x: auto;
+    padding: 26px 22px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .flow-canvas {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 1040px;
+  }
+  .phase-row {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+  }
+  .phase-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    min-width: 26px;
+    text-align: center;
+    padding: 4px 0;
+  }
+  .nodes-row {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    flex-wrap: nowrap;
+  }
+  .node {
+    position: relative;
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border2);
+    background: var(--bg);
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: box-shadow .15s, border-color .15s, transform .1s;
+    min-width: 130px;
+    max-width: 152px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+  }
+  .node:hover { box-shadow: 0 3px 12px rgba(0,0,0,.11); transform: translateY(-1px); }
+  .node.active { outline: 2px solid #185FA5; outline-offset: 2px; }
+  .node-title { font-size: 11.5px; font-weight: 500; line-height: 1.35; }
+
+  /* colors */
+  .c-blue   { background:#E6F1FB; border-color:#85B7EB; }
+  .c-blue   .node-title { color:#0C447C; }
+  .c-teal   { background:#E1F5EE; border-color:#5DCAA5; }
+  .c-teal   .node-title { color:#085041; }
+  .c-amber  { background:#FAEEDA; border-color:#EF9F27; }
+  .c-amber  .node-title { color:#633806; }
+  .c-purple { background:#EEEDFE; border-color:#AFA9EC; }
+  .c-purple .node-title { color:#26215C; }
+  .c-green  { background:#EAF3DE; border-color:#97C459; }
+  .c-green  .node-title { color:#173404; }
+  .c-red    { background:#FAECE7; border-color:#F0997B; }
+  .c-red    .node-title { color:#4A1B0C; }
+
+  @media (prefers-color-scheme: dark) {
+    .c-blue   { background:#0c447c; border-color:#378add; }
+    .c-blue   .node-title { color:#b5d4f4; }
+    .c-teal   { background:#085041; border-color:#1d9e75; }
+    .c-teal   .node-title { color:#9fe1cb; }
+    .c-amber  { background:#633806; border-color:#ef9f27; }
+    .c-amber  .node-title { color:#fac775; }
+    .c-purple { background:#26215c; border-color:#7f77dd; }
+    .c-purple .node-title { color:#cecbf6; }
+    .c-green  { background:#173404; border-color:#639922; }
+    .c-green  .node-title { color:#c0dd97; }
+    .c-red    { background:#4a1b0c; border-color:#d85a30; }
+    .c-red    .node-title { color:#f5c4b3; }
+  }
+
+  .badge-time {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap; margin-top: 1px;
+  }
+  .badge-blue  { background:#B5D4F4; color:#042C53; }
+  .badge-amber { background:#FAC775; color:#412402; }
+  .badge-gray  { background:#D3D1C7; color:#2C2C2A; }
+  .badge-red   { background:#F7C1C1; color:#501313; }
+  .badge-warn  { background:#F4C0D1; color:#4B1528; font-size:9.5px; }
+
+  @media (prefers-color-scheme: dark) {
+    .badge-blue  { background:#0C447C; color:#B5D4F4; }
+    .badge-amber { background:#633806; color:#FAC775; }
+    .badge-gray  { background:#444441; color:#D3D1C7; }
+    .badge-red   { background:#791F1F; color:#F7C1C1; }
+    .badge-warn  { background:#72243E; color:#F4C0D1; }
+  }
+
+  .connector { display:flex; align-items:center; min-width:26px; justify-content:center; flex-shrink:0; }
+  .phase-divider { height:1px; background:var(--border); margin:2px 0 2px 26px; }
+
+  /* ── Detail panel ── */
+  .hint-text {
+    font-size: 12px; color: var(--text3);
+    text-align: center; padding: 6px 0 2px;
+  }
+  .detail-panel {
+    margin: 0 22px 18px;
+    padding: 15px 17px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+  }
+  .detail-panel.show { display: block; }
+  .detail-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+  .detail-body  { color: var(--text2); }
+  .detail-section { margin-top: 10px; padding-top: 9px; border-top: 0.5px solid var(--border); }
+  .detail-section-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color:var(--text3); margin-bottom:4px; }
+  .detail-warning { color:#A32D2D; margin-top:10px; padding-top:9px; border-top:0.5px solid #F09595; }
+  .detail-warning .detail-section-label { color:#A32D2D; }
+  @media (prefers-color-scheme: dark) {
+    .detail-warning { color:#F09595; border-top-color:#791F1F; }
+    .detail-warning .detail-section-label { color:#F09595; }
+  }
+
+  /* ── Bottom bar ── */
+  .bottom-bar {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 22px 18px;
+    border-top: 0.5px solid var(--border);
+    background: var(--bg2);
+  }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; align-items:center; font-size:11.5px; color:var(--text2); }
+  .legend-item { display:flex; align-items:center; gap:5px; }
+  .legend-dot { width:11px; height:11px; border-radius:3px; border:0.5px solid; flex-shrink:0; }
+  .info-row { font-size:11.5px; color:var(--text2); line-height:1.6; }
+  .info-row b { color:var(--text); font-weight:600; }
+
+  .flow-wrap::-webkit-scrollbar { height:5px; }
+  .flow-wrap::-webkit-scrollbar-track { background:var(--bg2); }
+  .flow-wrap::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Registro Sanitario – Caribe y Centroamérica</h1>
+  <p>Uso interno del equipo · Haz clic en cada paso para ver los detalles completos</p>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs-bar" id="tabsBar"></div>
+</div>
+
+<div class="main-card" id="mainCard"></div>
+
+<script>
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
+const countries = [
+
+  /* ══════════════ PANAMÁ ══════════════ */
+  {
+    id: "panama",
+    name: "Panamá",
+    flag: "🇵🇦",
+    infoRow: "<b>Horario plataforma:</b> L–V 8:00 am – 4:00 pm &nbsp;·&nbsp; <b>Plazo total referencial:</b> ~3 meses desde el ingreso &nbsp;·&nbsp; <b>Subsanaciones:</b> máx. 2 oportunidades &nbsp;·&nbsp; <b>Docs:</b> PDF, apostillados",
+    phases: [
+      {
+        phase: "1. Preparación", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"notif", label:"Notificación del trámite", color:"c-blue",
+            detail:"Al recibir la notificación se inician los trámites notariales: recolección de documentos, firmas, poderes notariales y declaraciones juradas.",
+            notes:null, warning:null, time:null, timeBadge:null },
+          { id:"eval", label:"Recepción y evaluación de documentos", color:"c-blue",
+            time:"~2 días", timeBadge:"badge-blue",
+            detail:"Se reciben y evalúan los documentos. Deben ir en español e inglés en el mismo PDF. Artes en documentos separados (arte primario, secundario e inserto).",
+            notes:"Docs en español e inglés en mismo PDF · Artes separados · Todos en formato PDF · Apostillados",
+            warning:"No enviar por separado documentos que deben estar juntos en el mismo PDF." },
+          { id:"obs-cliente", label:"Revisión de observaciones por el cliente", color:"c-teal",
+            detail:"El cliente revisa las observaciones señaladas en la evaluación inicial.",
+            notes:null, warning:null, time:null, timeBadge:null },
+          { id:"correc", label:"Verificación de correcciones", color:"c-teal",
+            time:"~7 días hábiles", timeBadge:"badge-blue",
+            detail:"Se verifican las correcciones realizadas por el cliente antes de continuar.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "2. Análisis", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"iea", label:"Cotización de análisis – IEA", color:"c-amber",
+            time:"1–2 meses", timeBadge:"badge-amber",
+            detail:"Solicitud de cotización de análisis en el Instituto Especializado de Análisis (IEA). Solo aplica cuando el país de origen no es de alto estándar.",
+            notes:"Solo aplica cuando el país de origen no es de alto estándar.",
+            warning:null },
+          { id:"refrendo", label:"Cancelación del refrendo", color:"c-amber",
+            time:"hasta 3 días (Colegio)", timeBadge:"badge-gray",
+            detail:"Se cancela el refrendo. Documento obligatorio para subir la solicitud a la plataforma virtual. El Colegio de Farmacéuticos puede tardar hasta 3 días.",
+            notes:"La solicitud al Colegio puede tardar hasta 3 días en tener respuesta.",
+            warning:"Sin este documento no es posible continuar el trámite." }
+        ]
+      },
+      {
+        phase: "3. Plataforma virtual", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"ventanilla", label:"Solicitud – Dir. Farmacia y Drogas (virtual)", color:"c-purple",
+            detail:"Se aplica la solicitud en la ventanilla virtual de la Dirección Nacional de Farmacia y Drogas.",
+            notes:null,
+            warning:"Horario: L–V 8:00 am – 4:00 pm. Fuera de ese horario no se permiten trámites; si se está realizando uno se borrará y deberá reiniciarse al día siguiente.",
+            time:null, timeBadge:null },
+          { id:"colegio", label:"Ingreso y revisión – Colegio de Farmacéuticos", color:"c-purple",
+            time:"48 h → ventanilla", timeBadge:"badge-blue",
+            detail:"El Colegio revisa el expediente y lo pasa a ventanilla.",
+            notes:"Trámite regular: mínimo 1 mes.\nAlto estándar: 10 días hábiles para dar observaciones.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "4. Subsanación", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"subsana", label:"Subsanación de observaciones", color:"c-teal",
+            time:"~8 días hábiles", timeBadge:"badge-blue",
+            detail:"Se atienden las observaciones. Se tienen 2 oportunidades. Si se llega a una segunda subsanación sin resolver, el trámite se cancela y debe reiniciarse.",
+            notes:"Regular: 3 meses desde ingreso.\nAlto estándar: 10 días hábiles para respuesta, 5 días para subsanar.",
+            warning:"Solo 2 oportunidades. A la segunda sin resolver, el trámite se cancela." },
+          { id:"arancel", label:"Pago del arancel sanitario", color:"c-teal",
+            time:"mín. 72 horas", timeBadge:"badge-amber",
+            detail:"Se realiza el pago del arancel sanitario correspondiente.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "5. Muestras y evaluación", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"muestras", label:"Entrega de muestras a Farmacia y Drogas e IEA", color:"c-amber",
+            time:"~7 días hábiles", timeBadge:"badge-blue",
+            detail:"Se entregan las muestras a la Dirección de Farmacia y Drogas y al IEA.",
+            notes:null, warning:null },
+          { id:"evaluador", label:"Asignación de evaluador", color:"c-amber",
+            detail:"Se asigna un evaluador al expediente para revisión técnica.",
+            notes:null, warning:null, time:null, timeBadge:null },
+          { id:"obs-emitidas", label:"Emisión de observaciones por el evaluador", color:"c-amber",
+            time:"~60 días calendario", timeBadge:"badge-gray",
+            detail:"El evaluador emite las observaciones. Plazo abreviado (alto estándar): ~30 días.",
+            notes:"El plazo de 3 meses NO se reinicia con nuevas observaciones.\nHay evaluadores que indican tiempo para contestar, otros no.",
+            warning:"El plazo de 3 meses rige desde el inicio. Todas las subsanaciones deben hacerse dentro de ese tiempo." }
+        ]
+      },
+      {
+        phase: "6. Cierre", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"orden", label:"Cancelación de orden de pago y derechos de registro", color:"c-purple",
+            detail:"Se cancela la orden de pago y los derechos de registro. La plataforma brinda 48 horas para subir el formulario firmado por ambos (firma del abogado mínimo 24 horas).",
+            notes:"Firma del abogado: mínimo 24 horas.\nPlazo plataforma para formulario firmado: 48 horas.",
+            warning:null, time:null, timeBadge:null },
+          { id:"registro", label:"✅ ¡Se obtiene el Registro Sanitario!", color:"c-green",
+            detail:"Se obtiene el Registro Sanitario en Panamá. Duración referencial: ~3 meses desde el inicio.",
+            notes:"Tener en cuenta los 3 meses totales. Hay evaluadores que indican tiempo para contestar, otros no.",
+            warning:null, time:null, timeBadge:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Documental / administrativo" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Revisión / verificación" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Análisis / técnico" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Ventanilla / plataforma" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Resultado final" }
+    ]
+  },
+
+  /* ══════════════ COSTA RICA ══════════════ */
+  {
+    id: "costarica",
+    name: "Costa Rica",
+    flag: "🇨🇷",
+    infoRow: "<b>Plataforma:</b> Regístrelo 2.0 (MINSA) &nbsp;·&nbsp; <b>Apertura de trámite:</b> hasta 2 horas &nbsp;·&nbsp; <b>Revisión inicial Registra-2:</b> 8 días &nbsp;·&nbsp; <b>Verificación de documentos:</b> 5–8 días",
+    phases: [
+      {
+        phase: "1. Recepción", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"cr-dossier", label:"Recepción del Dossier", color:"c-blue",
+            detail:"Se recibe el Dossier completo para iniciar el trámite de registro sanitario en Costa Rica.",
+            notes:null, warning:null, time:null, timeBadge:null }
+        ]
+      },
+      {
+        phase: "2. Revisión Registra-2", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"cr-revision", label:"Revisión de documentación – Registra-2", color:"c-teal",
+            time:"8 días", timeBadge:"badge-blue",
+            detail:"Registra-2 realiza la revisión de la documentación y comparte con el cliente un checklist con comentarios y sugerencias detalladas para cada requisito, según lo revisado en los documentos compartidos.",
+            notes:"El checklist incluye comentarios y sugerencias para cada requisito de manera detallada.",
+            warning:null },
+          { id:"cr-cliente", label:"Revisión y correcciones por el cliente", color:"c-teal",
+            detail:"El cliente revisa las observaciones y realiza correcciones. Devuelve el checklist con comentarios o preguntas según lo compartido por Registra-2.",
+            notes:null, warning:null, time:null, timeBadge:null },
+          { id:"cr-verif", label:"Verificación de requisitos completos – Registra-2", color:"c-teal",
+            time:"5–8 días", timeBadge:"badge-blue",
+            detail:"Registra-2 revisa los documentos pendientes y verifica que todos los requisitos estén completos antes de continuar.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "3. Certificaciones y traducciones", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"cr-cert", label:"Certificaciones y traducciones oficiales (locales CR)", color:"c-amber",
+            detail:"Se gestionan las certificaciones y traducciones oficiales que deben realizarse de manera local en Costa Rica.",
+            notes:null, warning:null, time:null, timeBadge:null },
+          { id:"cr-trad", label:"Traducción simple de documentos, artes, monografía e inserto", color:"c-amber",
+            time:"~8 días", timeBadge:"badge-blue",
+            detail:"Traducción simple de algún otro documento o artes. Servicio de monografía e inserto. Este proceso puede iniciarse en el momento que el cliente lo indique.",
+            notes:"Este proceso puede iniciarse en paralelo en el momento que el cliente indique, sin necesidad de esperar a que terminen pasos anteriores.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "4. Sometimiento", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"cr-plataforma", label:"Apertura de trámite en Regístrelo 2.0", color:"c-purple",
+            time:"hasta 2 horas", timeBadge:"badge-amber",
+            detail:"Una vez completados los puntos anteriores (si aplican), se abre el trámite en la plataforma Regístrelo 2.0 para el sometimiento ante el MINSA.",
+            notes:"Se abre solo cuando todos los requisitos previos están completos.",
+            warning:null },
+          { id:"cr-pago", label:"Pago del trámite y revisión por el MINSA", color:"c-purple",
+            detail:"Se realiza el pago del trámite y el expediente pasa a revisión por parte del Ministerio de Salud (MINSA).",
+            notes:null, warning:null, time:null, timeBadge:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Recepción" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Revisión / verificación" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Certificaciones / traducciones" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Sometimiento / plataforma" }
+    ]
+  }
+
+  ,
+
+  /* ══════════════ NICARAGUA ══════════════ */
+  {
+    id: "nicaragua",
+    name: "Nicaragua",
+    flag: "🇳🇮",
+    infoRow: "<b>Horario KARPLUS:</b> 8:00 am – 5:00 pm, días hábiles &nbsp;·&nbsp; <b>Máx. solicitudes/día:</b> 5 (registro nuevo, renovación, complemento) &nbsp;·&nbsp; <b>Pre-evaluación:</b> 2 días hábiles &nbsp;·&nbsp; <b>Resolución Adm.:</b> N° 0015/2025",
+    phases: [
+      {
+        phase: "1. Preparación", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"ni-req", label:"Reunión de requisitos previos", color:"c-blue",
+            time:null, timeBadge:null,
+            detail:"Se reúnen todos los requisitos previos antes de ingresar el trámite.",
+            notes:"Documentos del extranjero: originales físicos, apostillados o consularizados/legalizados.\nTraducciones y certificaciones: 5 días hábiles.\nPago a la autoridad: 1 día hábil.\nDocs técnicos en español, firmados por director técnico.\nLicencia sanitaria de funcionamiento vigente.\nMuestras para registro (vigencia mayor a 1 año) según Res. Adm. 0024-2024.\nMuestras primera importación (registro nuevo) según Res. Adm. N° 0009/2024.",
+            warning:null },
+          { id:"ni-arancel", label:"Cancelación previa del arancel", color:"c-blue",
+            time:null, timeBadge:null,
+            detail:"Se cancela el arancel correspondiente previo al ingreso del trámite en el sistema KARPLUS.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "2. Pre-evaluación", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"ni-preeval", label:"Ingreso en KARPLUS y pre-evaluación", color:"c-purple",
+            time:"2 días hábiles", timeBadge:"badge-blue",
+            detail:"Se somete la solicitud en el sistema KARPLUS. El Departamento de Registro de la Dirección de Farmacia realiza la pre-evaluación en un plazo de 2 días hábiles.",
+            notes:"Máx. 5 solicitudes por día (registro nuevo, renovaciones y complementos) independientemente del tipo y categoría del producto.\nMódificaciones al registro (nuevo y complemento): máx. 8 solicitudes los días lunes, miércoles y viernes.",
+            warning:"Horario de ingreso: 8:00 am a 5:00 pm, días hábiles." },
+          { id:"ni-preeval-result", label:"Resultado de pre-evaluación", color:"c-purple",
+            time:null, timeBadge:null,
+            detail:"La Dirección de Farmacia emite el resultado de la pre-evaluación: aprobado o rechazado.",
+            notes:"Si es RECHAZADO: el usuario dispone de 15 días hábiles para corregir. Si persiste el no conformidad: CANCELACIÓN DEL TRÁMITE (debe iniciar un nuevo trámite con su respectivo pago).",
+            warning:null }
+        ]
+      },
+      {
+        phase: "3. Presentación de muestras", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"ni-muestras", label:"Presentación de muestras para registro", color:"c-amber",
+            time:"3 días hábiles (tras aprobación)", timeBadge:"badge-blue",
+            detail:"Una vez aprobada la pre-evaluación, el usuario dispone de 3 días hábiles para presentar la muestra (si no se presenta en ese tiempo, se cancela el trámite y debe iniciarse uno nuevo con su respectivo pago).",
+            notes:"Horario de recepción de muestras cuando las recepciona la Dirección de Farmacia: 8:00 am a 12:00 md y de 1:00 pm a 3:00 pm.\nUna vez recepcionada, pasa a la etapa de EVALUACIÓN.",
+            warning:"Si no se presenta la muestra en 3 días hábiles, el trámite se CANCELA y debe iniciarse de nuevo con pago." }
+        ]
+      },
+      {
+        phase: "4. Evaluación", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"ni-eval", label:"Evaluación por Dirección de Farmacia", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"La Dirección de Farmacia realiza la evaluación del expediente.",
+            notes:null, warning:null },
+          { id:"ni-eval-result", label:"Resultado de evaluación", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"Se emite el resultado de la evaluación: aprobado o rechazado.",
+            notes:"Si es RECHAZADO EN EVALUACIÓN: el usuario dispone de 30 días para corregir o completar el trámite.",
+            warning:null },
+          { id:"ni-analisis", label:"Análisis de control de calidad (vigilancia sanitaria)", color:"c-teal",
+            time:"20 días hábiles", timeBadge:"badge-blue",
+            detail:"Una vez en estado EN EVALUACIÓN, el usuario realiza en KARPLUS en un plazo máximo de 20 días hábiles la solicitud de análisis de control de calidad para VIGILANCIA SANITARIA. La Dirección de Farmacia dispone de 10 días hábiles después de emitido el certificado de renovación para toma de muestras en el establecimiento.",
+            notes:"Resultado NO CONFORME (1er muestreo): usuario dispone de 20 días hábiles para nuevo análisis.\nResultado NO CONFORME (2do muestreo): se CANCELA el registro.\nCONFORME: se mantiene vigente la Autorización de Comercialización.",
+            warning:"Cada lote que no cumpla con el análisis de control de calidad implica RETIRO DEL PRODUCTO en farmacias y el establecimiento, destrucción a cargo del importador (gastos de destrucción en max 20 días hábiles), con supervisión de delegados de ANRS." }
+        ]
+      },
+      {
+        phase: "5. Registro / Corrección", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"ni-registrado", label:"Registro aprobado – Certificado emitido", color:"c-green",
+            time:"10 días hábiles (Dir. Farmacia revisa)", timeBadge:"badge-blue",
+            detail:"Si es aprobado, la Dirección de Farmacia emite el Certificado de Registro Sanitario. Para registro nuevo: una vez registrado, el sistema emite el certificado de registro; cambios, renovación con cambios: máximo 15 días hábiles posterior a la nacionalización del producto.",
+            notes:"El Regente Farmacéutico del Establecimiento entrega: Certificado de producto terminado de lote a muestrear, estándares de referencia con su respectivo certificado de calidad y recibo de pago.\nPara primera importación (Registro Nuevo): la Dirección de Farmacia dispondrá de 3 días hábiles para emisión de carta de Liberación de comercialización del producto.",
+            warning:null },
+          { id:"ni-correccion", label:"Corrección del registro sanitario", color:"c-teal",
+            time:"5 días hábiles para solicitar correcciones", timeBadge:"badge-amber",
+            detail:"Si se detecta no conformidad al certificado o la certificación, el usuario dispone de 5 días hábiles para solicitar correcciones. Si no procede la solicitud de corrección, se mantiene el dictamen del registro y certificación.",
+            notes:null,
+            warning:null }
+        ]
+      },
+      {
+        phase: "6. Recursos y sanciones", phaseColor: "#7A1F1F", arrowColor: "#C94040",
+        nodes: [
+          { id:"ni-revision", label:"Recursos de revisión contra rechazos", color:"c-red",
+            time:"10 días hábiles para interponer", timeBadge:"badge-red",
+            detail:"Ante actos definitivos que pongan fin al procedimiento administrativo: se podrá interponer recurso de revisión o cancelación. El recurso debe someterse dentro de los primeros 10 días hábiles posteriores a la emisión del rechazo en el sistema KARPLUS, adjuntando el expediente.",
+            notes:"Se debe subsanar los primeros 10 días hábiles posteriores a la entrega de la resolución del recurso de revisión, adjuntando copia de la documentación de soporte que el recurrente considere aplicable.",
+            warning:null },
+          { id:"ni-apelacion", label:"Recursos de apelación", color:"c-red",
+            time:"10 días hábiles tras resolución de revisión", timeBadge:"badge-red",
+            detail:"Los actos definitivos que ponen fin al procedimiento administrativo (que no agotan la vía administrativa) y los actos de trámite cualificados pueden ser impugnados mediante recurso de apelación, presentado ante el órgano que dictó el acto o directamente ante la Dirección General de la ANRS.",
+            notes:"Contra lo resuelto en el recurso de apelación no podrá interponerse nuevo recurso de apelación, y se entenderá agotada la vía administrativa.",
+            warning:null },
+          { id:"ni-sanciones", label:"Sanciones por incumplimiento", color:"c-red",
+            time:null, timeBadge:null,
+            detail:"El incumplimiento de lo dispuesto en la renovación y demás instrumentos jurídicos aplicables será considerado como falta o infracción. Las faltas e infracciones serán sancionadas de acuerdo con lo establecido en la Ley 1053, Ley creadora de la ANRS u otro instrumento jurídico aplicable.",
+            notes:null,
+            warning:"Las faltas e infracciones se sancionan conforme a la Ley 1053 (Ley creadora de la ANRS)." }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Preparación / requisitos" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Pre-evaluación / KARPLUS" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Muestras / análisis" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Evaluación" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Registro aprobado" },
+      { bg:"#FAECE7", border:"#F0997B", label:"Recursos / sanciones" }
+    ]
+  }
+
+  ,
+
+  /* ══════════════ GUATEMALA ══════════════ */
+  {
+    id: "guatemala",
+    name: "Guatemala",
+    flag: "🇬🇹",
+    infoRow: "<b>Todo el proceso es presencial</b> &nbsp;·&nbsp; <b>Protocolo en archivo:</b> ~3 días (sin traducciones) &nbsp;·&nbsp; <b>Certificaciones y traducciones:</b> 10–15 días &nbsp;·&nbsp; <b>Plazo de respuesta Dpto. Regulación:</b> 6 meses, máx. 2 observaciones &nbsp;·&nbsp; <b>Plazo LNS:</b> 3 meses, máx. 3 observaciones",
+    phases: [
+      {
+        phase: "1. Protocolo y poder", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"gt-poder", label:"Envío del poder original e inscripción del protocolo", color:"c-blue",
+            time:"~3 días (solo en archivo)", timeBadge:"badge-blue",
+            detail:"Se envía el poder original para elaborar el protocolo y se inscribe el protocolo ante el Archivo General de Protocolos.",
+            notes:"Los ~3 días no incluyen traducciones u otros trámites adicionales; corresponden únicamente al tiempo dentro del archivo.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "2. Revisión documental", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"gt-dossier", label:"Recepción de dossier – Registra-2 revisa y comparte checklist", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"Se recibe el dossier para el trámite de registro sanitario. Registra-2 revisa la documentación y comparte con el cliente un checklist (también se piden requisitos faltantes si aplica).",
+            notes:"El checklist incluye todos los requisitos; si faltan documentos se solicitan en este momento.",
+            warning:null },
+          { id:"gt-cliente", label:"Revisión y correcciones por el cliente", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"El cliente revisa las observaciones y realiza correcciones, devolviendo el checklist con comentarios o preguntas.",
+            notes:null, warning:null },
+          { id:"gt-verif", label:"Verificación de trámites completos y documentos pendientes", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"Se verifica que los trámites estén completos y se revisan los documentos que quedaron pendientes. Todo se lleva a cabo de manera presencial.",
+            notes:"Todo el proceso de este país se realiza de manera presencial.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "3. Traducciones y certificaciones", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"gt-trad-simple", label:"Traducciones simples y copias legalizadas", color:"c-amber",
+            time:null, timeBadge:null,
+            detail:"Se realizan las traducciones simples de documentos y copias legalizadas según aplique.",
+            notes:null, warning:null },
+          { id:"gt-trad-oficial", label:"Certificaciones y traducciones oficiales por traductor jurado autorizado en Guatemala", color:"c-amber",
+            time:"~10–15 días", timeBadge:"badge-amber",
+            detail:"Se realizan certificaciones y traducciones oficiales por un traductor jurado autorizado en Guatemala.",
+            notes:"El tiempo depende del tamaño del documento y la disponibilidad del traductor.",
+            warning:null },
+          { id:"gt-monografia", label:"Traducciones simples de docs o artes, monografías e insertos", color:"c-amber",
+            time:null, timeBadge:null,
+            detail:"También se llevan a cabo las traducciones simples de documentos o artes. Se ofrece además el servicio de monografías e insertos, iniciando en cuanto el cliente lo indique.",
+            notes:"Puede iniciarse en paralelo en cuanto el cliente lo indique.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "4. Armado y pago", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"gt-armado", label:"Armado, foliado y preparación para presentar", color:"c-purple",
+            time:null, timeBadge:null,
+            detail:"Una vez completados todos los puntos anteriores, se arma, folea y prepara el expediente para presentarlo ante la autoridad.",
+            notes:null, warning:null },
+          { id:"gt-pago", label:"Pago en banco y tramitación del recibo físico", color:"c-purple",
+            time:null, timeBadge:null,
+            detail:"Se realiza el pago en el banco y se tramita el recibo físico correspondiente.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "5. Evaluación oficial", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"gt-regulacion", label:"Revisión y emisión de observaciones – Dpto. de Regulación", color:"c-green",
+            time:"hasta 6 meses, máx. 2 obs.", timeBadge:"badge-gray",
+            detail:"El Departamento de Regulación revisa el expediente y emite observaciones. El plazo de respuesta es de 6 meses con un máximo de 2 observaciones.",
+            notes:null,
+            warning:"En las revisiones del Dpto. NO se aceptan compromisos ni ampliación de plazos." },
+          { id:"gt-lns", label:"Revisión detallada del expediente – Laboratorio Nacional de Salud (LNS)", color:"c-green",
+            time:"hasta 3 meses, máx. 3 obs.", timeBadge:"badge-gray",
+            detail:"El Laboratorio Nacional de Salud realiza la revisión detallada del expediente. Ya NO se solicitan muestras ni estándares al inicio.",
+            notes:"Una vez conforme el expediente, el LNS solicita muestras y estándares. Deben estar disponibles: plazo máximo de entrega 6 meses para proceso normal y 15 días hábiles para homologados.",
+            warning:"NO se permiten apelaciones ni rechazos de LNS." }
+        ]
+      },
+      {
+        phase: "6. Subsanación y cierre", phaseColor: "#633806", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"gt-subsana", label:"Subsanación de observaciones", color:"c-amber",
+            time:null, timeBadge:null,
+            detail:"Se atienden las observaciones emitidas por el Departamento de Regulación y/o el LNS dentro de los plazos establecidos.",
+            notes:"Dpto. de Regulación: máx. 2 observaciones.\nLNS: máx. 3 observaciones.",
+            warning:null },
+          { id:"gt-muestras-lns", label:"Entrega de muestras y estándares al LNS (cuando lo solicite)", color:"c-amber",
+            time:"máx. 6 meses (normal) / 15 días hábiles (homologados)", timeBadge:"badge-blue",
+            detail:"Una vez conforme el expediente, el LNS solicita muestras y estándares. El plazo máximo de entrega es de 6 meses para proceso normal y 15 días hábiles para productos homologados.",
+            notes:null, warning:null },
+          { id:"gt-aprobacion", label:"✅ Aprobación y emisión del registro sanitario", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"Se aprueba el expediente y se emite el Registro Sanitario en Guatemala.",
+            notes:null, warning:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Protocolo / poder" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Revisión documental" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Traducciones / certificaciones" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Armado / pago" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Evaluación oficial" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Subsanación y cierre" }
+    ]
+  }
+
+  ,
+
+  /* ══════════════ HONDURAS ══════════════ */
+  {
+    id: "honduras",
+    name: "Honduras",
+    flag: "🇭🇳",
+    infoRow: "<b>Autoridad:</b> ARSA &nbsp;·&nbsp; <b>Revisión Registra-2:</b> 1–2 días hábiles &nbsp;·&nbsp; <b>Verificación requisitos:</b> 7 días hábiles &nbsp;·&nbsp; <b>Observaciones ARSA:</b> 30–120 días hábiles &nbsp;·&nbsp; <b>Subsanación:</b> 5 días hábiles (prorrogable hasta 30 más)",
+    phases: [
+      {
+        phase: "1. Revisión documental", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"hn-dossier", label:"Recepción de Dossier – Registra-2 revisa y comparte checklist", color:"c-blue",
+            time:"1–2 días hábiles", timeBadge:"badge-blue",
+            detail:"Se recibe el Dossier para el trámite de registro sanitario. Registra-2 revisa la documentación y comparte con el cliente un checklist (también se solicitan requisitos faltantes si fuera necesario).",
+            notes:"Si existen traducciones de documentos, la aprobación en Relaciones Exteriores va de 2 a 4 semanas.\nSe debe realizar un pago a ARSA por cuota de recuperación previo al ingreso de la solicitud.",
+            warning:null },
+          { id:"hn-cliente", label:"Revisión y correcciones por el cliente", color:"c-blue",
+            time:null, timeBadge:null,
+            detail:"El cliente revisa las observaciones y realiza correcciones, devolviendo el checklist con comentarios o preguntas según lo compartido por Registra-2.",
+            notes:null, warning:null },
+          { id:"hn-verif", label:"Registra-2 verifica requisitos y prepara declaración jurada ante notario", color:"c-blue",
+            time:"7 días hábiles", timeBadge:"badge-blue",
+            detail:"Registra-2 revisa los documentos pendientes y verifica que los requisitos estén completos. Se prepara el expediente y la declaración jurada ante un notario (Autenticación).",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "2. Pago e ingreso", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"hn-pago", label:"Pago en ARSA por derecho del trámite electrónico", color:"c-purple",
+            time:"5–7 días hábiles", timeBadge:"badge-blue",
+            detail:"Se realiza el pago en ARSA por el derecho del trámite electrónico. Se adjunta a la documentación la declaración jurada incluida.",
+            notes:"Los 5–7 días corresponden a las gestiones locales relacionadas al pago y trámite.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "3. Evaluación ARSA", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"hn-obs", label:"Autoridad sanitaria emite observaciones", color:"c-amber",
+            time:"30–120 días hábiles", timeBadge:"badge-amber",
+            detail:"La autoridad sanitaria realiza observaciones según el tipo de registro. El plazo depende del tipo de trámite.",
+            notes:"Las observaciones se envían el mismo día vía correo electrónico al especialista encargado, con fecha límite de respuesta.",
+            warning:null },
+          { id:"hn-subsana", label:"Subsanación de observaciones", color:"c-amber",
+            time:"5 días hábiles (+ hasta 30 de prórroga)", timeBadge:"badge-amber",
+            detail:"Se contestan las observaciones. Registra-2 realiza las subsanaciones locales, contesta el requerimiento y envía el soporte al técnico.",
+            notes:"Se puede solicitar una prórroga de hasta 30 días hábiles adicionales.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "4. Pre-aprobación y análisis", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"hn-preaprueba", label:"ARSA emite orden de análisis – pago 50% ante LEFH", color:"c-teal",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"Una vez pre-aprobado, ARSA emite una orden de análisis para proceder con el pago de honorarios al 50% ante el LEFH. Se debe subir el comprobante de pago de análisis.",
+            notes:null, warning:null },
+          { id:"hn-plataforma", label:"Subida a plataforma ARSA (pago análisis + declaración jurada autenticada)", color:"c-teal",
+            time:"Inmediato", timeBadge:"badge-gray",
+            detail:"Se sube a la plataforma de ARSA el pago de análisis y la declaración jurada autenticada preparada localmente.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "5. Aprobación y validación", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"hn-aprobacion", label:"Aprobación de ARSA – se informa al cliente", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"Se recibe la aprobación de ARSA y se informa al cliente.",
+            notes:null, warning:null },
+          { id:"hn-contabilidad", label:"Cobro del 50% restante de honorarios y gastos de análisis", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"La aprobación pasa a contabilidad para realizar el cobro del 50% restante de honorarios y gastos como pago de análisis cuando aplique.",
+            notes:null, warning:null },
+          { id:"hn-validacion", label:"Validación final por ARSA", color:"c-green",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"ARSA realiza la validación final del expediente.",
+            notes:"Si cumple: se obtiene el Registro Sanitario y se notifica al especialista vía correo electrónico.\nSi NO cumple: se permite 1 apelación para completar información con 10 días hábiles para subsanar.",
+            warning:null },
+          { id:"hn-registro", label:"✅ Registro Sanitario obtenido", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"Se obtiene el Registro Sanitario en Honduras. El especialista es notificado vía correo electrónico.",
+            notes:null, warning:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Revisión documental" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Pago e ingreso" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Evaluación ARSA" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Pre-aprobación y análisis" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Aprobación y validación" }
+    ]
+  }
+  ,
+
+  /* ══════════════ EL SALVADOR ══════════════ */
+  {
+    id: "elsalvador",
+    name: "El Salvador",
+    flag: "🇸🇻",
+    infoRow: "<b>Autoridad:</b> SRS (Sistema de Registro Sanitario) &nbsp;·&nbsp; <b>Inscripción de poderes:</b> 10 días hábiles &nbsp;·&nbsp; <b>Revisión Registra-2:</b> 10 días hábiles &nbsp;·&nbsp; <b>Certificaciones y traducciones:</b> 5–8 días &nbsp;·&nbsp; <b>Notificación SRS:</b> 10 días hábiles &nbsp;·&nbsp; <b>Subsanación:</b> 10 días hábiles (prorrogable 30 + 20 días)",
+    phases: [
+      {
+        phase: "1. Preparación legal", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"sv-poderes", label:"Inscripción de poderes", color:"c-blue",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"Se gestiona la inscripción de poderes como primer paso del proceso.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "2. Revisión documental", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"sv-dossier", label:"Recepción de dossier – Registra-2 revisa y comparte checklist", color:"c-teal",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"Se recibe el dossier para el trámite de registro sanitario. Registra-2 revisa la documentación y comparte con el cliente un checklist (también se solicitan requisitos que podrían estar faltando).",
+            notes:null, warning:null },
+          { id:"sv-verif", label:"Revisión de documentos pendientes y verificación de completitud", color:"c-teal",
+            time:null, timeBadge:null,
+            detail:"Se revisan los documentos pendientes y se verifica que se encuentren completos antes de continuar.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "3. Traducciones y certificaciones", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"sv-cert", label:"Certificaciones y traducciones oficiales (locales en El Salvador)", color:"c-amber",
+            time:"5–8 días", timeBadge:"badge-blue",
+            detail:"Se entregan las certificaciones y traducciones oficiales que deben realizarse de forma local en El Salvador.",
+            notes:null, warning:null },
+          { id:"sv-trad", label:"Traducciones simples de docs o artes, monografías e insertos", color:"c-amber",
+            time:"~8 días aprox.", timeBadge:"badge-blue",
+            detail:"Se realizan traducciones simples de algún documento o de las artes. También se ofrece el servicio de monografías e insertos.",
+            notes:"Este proceso puede iniciarse en cuanto el cliente lo indique, sin necesidad de esperar pasos anteriores.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "4. Entrega e ingreso", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"sv-entrega", label:"Entrega de toda la documentación vía correo electrónico en formato digital", color:"c-purple",
+            time:"1–2 días", timeBadge:"badge-blue",
+            detail:"Se entrega toda la documentación vía correo electrónico en formato digital.",
+            notes:null, warning:null },
+          { id:"sv-ingreso", label:"Ingreso de datos del expediente del producto", color:"c-purple",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"Se procede a ingresar los datos del expediente del producto en el sistema.",
+            notes:null, warning:null },
+          { id:"sv-mandamiento", label:"Generación automática del mandamiento de pago", color:"c-purple",
+            time:null, timeBadge:null,
+            detail:"El sistema genera automáticamente el mandamiento de pago una vez ingresados los datos del expediente.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "5. Pago y sometimiento", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"sv-factura", label:"Elaboración de factura y solicitud de fondos a Costa Rica (Johatson) para pago del arancel", color:"c-amber",
+            time:"1–2 días", timeBadge:"badge-blue",
+            detail:"Se elabora la factura y se solicitan los fondos a Costa Rica (Johatson) para el pago del arancel a la SRS del trámite.",
+            notes:null, warning:null },
+          { id:"sv-pago", label:"Pago y envío de la solicitud", color:"c-amber",
+            time:"1 día", timeBadge:"badge-blue",
+            detail:"Se realiza el pago del arancel y se envía la solicitud a la SRS.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "6. Resolución y cierre", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"sv-notif", label:"Notificación por parte de SRS", color:"c-green",
+            time:"10 días hábiles", timeBadge:"badge-blue",
+            detail:"Se recibe la notificación por parte de la SRS indicando el resultado de la evaluación del expediente.",
+            notes:null, warning:null },
+          { id:"sv-resultado", label:"¿El expediente cumple?", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"La SRS evalúa si el expediente cumple con todos los requisitos.",
+            notes:"Si cumple: se obtiene el Registro Sanitario.\nSi NO cumple: se debe completar información en 10 días hábiles.",
+            warning:null },
+          { id:"sv-registro", label:"✅ Registro Sanitario obtenido", color:"c-green",
+            time:null, timeBadge:null,
+            detail:"Se obtiene el Registro Sanitario en El Salvador.",
+            notes:null, warning:null },
+          { id:"sv-subsana", label:"Completar información si no cumple (prórroga disponible)", color:"c-teal",
+            time:"10 días hábiles (+ 30 + 20 de prórroga)", timeBadge:"badge-amber",
+            detail:"Si el expediente no cumple, se deben subsanar las observaciones en los 10 días hábiles que otorga la ley. Se puede solicitar prórroga de hasta 30 días hábiles más, y si se necesita más tiempo, se puede solicitar extensión de prórroga de 20 días adicionales.",
+            notes:"Prórroga 1: hasta 30 días hábiles adicionales.\nExtensión adicional: hasta 20 días más si se requiere.",
+            warning:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Preparación legal" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Revisión documental" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Traducciones / certificaciones" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Entrega e ingreso" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Pago y sometimiento" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Resolución y cierre" }
+    ]
+  }
+
+  ,
+
+  /* ══════════════ REPÚBLICA DOMINICANA ══════════════ */
+  {
+    id: "repdom",
+    name: "Rep. Dominicana",
+    flag: "🇩🇴",
+    infoRow: "<b>Autoridad:</b> DIGEMAPS &nbsp;·&nbsp; <b>Pago de impuesto:</b> 1 día &nbsp;·&nbsp; <b>Ingreso de muestras:</b> 7 días &nbsp;·&nbsp; <b>Revisión en espera:</b> 1–2 meses &nbsp;·&nbsp; <b>Subsanación:</b> 30–45 días hábiles (sin prórroga, salvo doc. legal) &nbsp;·&nbsp; <b>Emisión de certificado:</b> 2–3 semanas",
+    phases: [
+      {
+        phase: "1. Pago e impuesto", phaseColor: "#185FA5", arrowColor: "#378ADD",
+        nodes: [
+          { id:"rd-impuesto", label:"Compra del impuesto en Salud Pública – Banco Banreservas (portal)", color:"c-blue",
+            time:"1 día", timeBadge:"badge-blue",
+            detail:"Se compra el impuesto en Salud Pública en el Banco Banreservas y se escanea. Todo se realiza a través del portal.",
+            notes:"Si no se tiene clara la categoría o clasificación para registrar dispositivos sanitarios o suplementos, se debe hacer una consulta al Ministerio primero (3–4 semanas) y cuando se tenga la respuesta, se trabaja y deposita el expediente.",
+            warning:null },
+          { id:"rd-solicitud", label:"Realización de la solicitud (formulario con número de impuesto)", color:"c-blue",
+            time:"1 día", timeBadge:"badge-blue",
+            detail:"Se realiza la solicitud llenando el formulario con el número de impuesto.",
+            notes:"Solicitud de citas: se realiza mediante un formulario y el departamento encargado de DIGEMAPS contacta a la regente vía telefónica para indicar día y hora.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "2. Ingreso del expediente", phaseColor: "#534AB7", arrowColor: "#7F77DD",
+        nodes: [
+          { id:"rd-ficha", label:"Llenado de ficha con información del producto", color:"c-purple",
+            time:"1 día", timeBadge:"badge-blue",
+            detail:"Se llena la ficha con la información del producto. El expediente pasa a pedido de muestra.",
+            notes:null, warning:null },
+          { id:"rd-muestras", label:"Ingreso de muestras y estándares", color:"c-purple",
+            time:"7 días", timeBadge:"badge-blue",
+            detail:"Se ingresan las muestras y estándares al expediente.",
+            notes:"Por homologación o proceso simplificado NO se necesitan muestras.",
+            warning:null }
+        ]
+      },
+      {
+        phase: "3. Revisión y observaciones", phaseColor: "#854F0B", arrowColor: "#EF9F27",
+        nodes: [
+          { id:"rd-revision", label:"Expediente en espera o en revisión – emisión de observaciones", color:"c-amber",
+            time:"1–2 meses", timeBadge:"badge-amber",
+            detail:"Una vez ingresado el expediente, queda en espera o en revisión. Se emiten las observaciones necesarias por proceso ordinario. Si es simplificado, solo se genera una (1) observación.",
+            notes:"Proceso ordinario: varias observaciones posibles.\nProceso simplificado: solo 1 observación.",
+            warning:null },
+          { id:"rd-devoluciones", label:"Devoluciones u observaciones – seguimiento hasta conclusión", color:"c-amber",
+            time:"máx. 30 días", timeBadge:"badge-red",
+            detail:"Cuando se reciben devoluciones u observaciones, se envían al cliente para subsanar y se da seguimiento hasta la conclusión.",
+            notes:null, warning:null }
+        ]
+      },
+      {
+        phase: "4. Subsanación", phaseColor: "#0F6E56", arrowColor: "#1D9E75",
+        nodes: [
+          { id:"rd-subsana", label:"Subsanación de observaciones", color:"c-teal",
+            time:"30–45 días hábiles", timeBadge:"badge-blue",
+            detail:"Se subsanan las observaciones. No hay posibilidad de prórroga, a menos que se necesite un documento legal.",
+            notes:"Una vez obtenida la conclusión de la evaluación satisfactoria del trámite, se da seguimiento hasta la entrega final del certificado.",
+            warning:"No hay posibilidad de prórroga, salvo cuando se necesite un documento legal." }
+        ]
+      },
+      {
+        phase: "5. Emisión del certificado", phaseColor: "#3B6D11", arrowColor: "#639922",
+        nodes: [
+          { id:"rd-certificado", label:"✅ Emisión del certificado de registro mediante la plataforma", color:"c-green",
+            time:"2–3 semanas", timeBadge:"badge-blue",
+            detail:"Se emite el certificado de registro sanitario a través de la plataforma de DIGEMAPS.",
+            notes:null, warning:null }
+        ]
+      }
+    ],
+    legend: [
+      { bg:"#E6F1FB", border:"#85B7EB", label:"Pago e impuesto" },
+      { bg:"#EEEDFE", border:"#AFA9EC", label:"Ingreso del expediente" },
+      { bg:"#FAEEDA", border:"#EF9F27", label:"Revisión y observaciones" },
+      { bg:"#E1F5EE", border:"#5DCAA5", label:"Subsanación" },
+      { bg:"#EAF3DE", border:"#97C459", label:"Emisión del certificado" }
+    ]
+  }
+
+]; // end countries
+
+
+/* ─────────────────────────────────────────────
+   RENDER
+───────────────────────────────────────────── */
+const tabsBar  = document.getElementById('tabsBar');
+const mainCard = document.getElementById('mainCard');
+
+function arrowSVG(color) {
+  return `<svg width="26" height="18" viewBox="0 0 26 18" fill="none">
+    <line x1="2" y1="9" x2="21" y2="9" stroke="${color}" stroke-width="1.4"/>
+    <polyline points="16,4 22,9 16,14" fill="none" stroke="${color}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+function downSVG() {
+  return `<svg width="14" height="22" viewBox="0 0 14 22" fill="none">
+    <line x1="7" y1="2" x2="7" y2="18" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>
+    <polyline points="3,14 7,20 11,14" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.2" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+countries.forEach((country, ci) => {
+  /* Tab button */
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (ci === 0 ? ' active' : '');
+  btn.innerHTML = `<span class="tab-flag">${country.flag}</span>${country.name}`;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.country-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + country.id).classList.add('active');
+  });
+  tabsBar.appendChild(btn);
+
+  /* Panel */
+  const panel = document.createElement('div');
+  panel.className = 'country-panel' + (ci === 0 ? ' active' : '');
+  panel.id = 'panel-' + country.id;
+
+  /* Flow */
+  const flowWrap = document.createElement('div');
+  flowWrap.className = 'flow-wrap';
+  const flowCanvas = document.createElement('div');
+  flowCanvas.className = 'flow-canvas';
+
+  let activeNode = null;
+
+  /* Detail panel */
+  const hintText = document.createElement('div');
+  hintText.className = 'hint-text';
+  hintText.textContent = '↑ Haz clic en cualquier paso para ver detalles';
+
+  const detailPanel = document.createElement('div');
+  detailPanel.className = 'detail-panel';
+
+  function showDetail(step) {
+    let html = `<div class="detail-title">${step.label}</div>`;
+    html += `<div class="detail-body">${step.detail}</div>`;
+    if (step.time) {
+      html += `<div class="detail-section"><div class="detail-section-label">⏱ Tiempo estimado</div>${step.time}</div>`;
+    }
+    if (step.notes) {
+      html += `<div class="detail-section"><div class="detail-section-label">📋 Notas</div>${step.notes.replace(/\n/g,'<br>')}</div>`;
+    }
+    if (step.warning) {
+      html += `<div class="detail-section detail-warning"><div class="detail-section-label">⚠ Advertencia importante</div>${step.warning}</div>`;
+    }
+    detailPanel.innerHTML = html;
+    detailPanel.classList.add('show');
+    hintText.style.display = 'none';
+  }
+
+  country.phases.forEach((phase, pi) => {
+    if (pi > 0) {
+      const div = document.createElement('div');
+      div.className = 'phase-divider';
+      flowCanvas.appendChild(div);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'phase-row';
+
+    const label = document.createElement('div');
+    label.className = 'phase-label';
+    label.textContent = phase.phase;
+    label.style.color = phase.phaseColor;
+    row.appendChild(label);
+
+    const nodesRow = document.createElement('div');
+    nodesRow.className = 'nodes-row';
+
+    phase.nodes.forEach((step, si) => {
+      if (si > 0) {
+        const conn = document.createElement('div');
+        conn.className = 'connector';
+        conn.innerHTML = arrowSVG(phase.arrowColor);
+        nodesRow.appendChild(conn);
+      }
+
+      const node = document.createElement('div');
+      node.className = 'node ' + (step.color || '');
+
+      const title = document.createElement('div');
+      title.className = 'node-title';
+      title.textContent = step.label;
+      node.appendChild(title);
+
+      if (step.time) {
+        const badge = document.createElement('span');
+        badge.className = 'badge-time ' + (step.timeBadge || 'badge-gray');
+        badge.textContent = step.time;
+        node.appendChild(badge);
+      }
+      if (step.warning) {
+        const warn = document.createElement('span');
+        warn.className = 'badge-time badge-warn';
+        warn.textContent = '⚠ ver nota';
+        node.appendChild(warn);
+      }
+
+      node.addEventListener('click', () => {
+        if (activeNode && activeNode !== node) activeNode.classList.remove('active');
+        activeNode = node;
+        node.classList.add('active');
+        showDetail(step);
+      });
+
+      nodesRow.appendChild(node);
+    });
+
+    if (pi < country.phases.length - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'connector';
+      conn.innerHTML = arrowSVG('rgba(0,0,0,0.18)');
+      nodesRow.appendChild(conn);
+      const down = document.createElement('div');
+      down.style.cssText = 'display:flex;align-items:center;min-width:18px;';
+      down.innerHTML = downSVG();
+      nodesRow.appendChild(down);
+    }
+
+    row.appendChild(nodesRow);
+    flowCanvas.appendChild(row);
+  });
+
+  flowWrap.appendChild(flowCanvas);
+  panel.appendChild(flowWrap);
+  panel.appendChild(hintText);
+  panel.appendChild(detailPanel);
+
+  /* Bottom bar */
+  const bottomBar = document.createElement('div');
+  bottomBar.className = 'bottom-bar';
+
+  const legend = document.createElement('div');
+  legend.className = 'legend';
+  country.legend.forEach(l => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${l.bg};border-color:${l.border}"></div><span>${l.label}</span>`;
+    legend.appendChild(item);
+  });
+
+  const infoRow = document.createElement('div');
+  infoRow.className = 'info-row';
+  infoRow.innerHTML = country.infoRow;
+
+  bottomBar.appendChild(legend);
+  bottomBar.appendChild(infoRow);
+  panel.appendChild(bottomBar);
+
+  mainCard.appendChild(panel);
+});
+</script>
+</body>
+</html>
